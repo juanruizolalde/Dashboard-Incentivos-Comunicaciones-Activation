@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Incentivos — Activation</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#0d0f14;
+    --panel:#161a24;
+    --panel-2:#1c212e;
+    --border:#2a3040;
+    --text:#e8eaf0;
+    --text-dim:#9aa2b4;
+    --comunicado:#5d6cf0;
+    --no-comunicado:#f5b942;
+    --control:#8a93a6;
+    --accent:#ff4d8d;
+    --green:#3ecf8e;
+    --yellow:#f5b942;
+    --red:#f2545b;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    padding:24px 32px 60px;
+  }
+  header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-bottom:20px;
+  }
+  header h1{
+    font-size:22px;
+    margin:0 0 4px;
+    font-weight:650;
+  }
+  header .sub{
+    color:var(--text-dim);
+    font-size:13px;
+  }
+  .badge{
+    display:inline-block;
+    background:linear-gradient(135deg,var(--comunicado),var(--accent));
+    color:#fff;
+    font-size:12px;
+    font-weight:600;
+    padding:5px 12px;
+    border-radius:20px;
+    letter-spacing:.3px;
+  }
+  .filters{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px 18px;
+    margin-bottom:20px;
+  }
+  .filter-row{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    flex-wrap:wrap;
+    margin-bottom:10px;
+  }
+  .filter-row:last-child{margin-bottom:0;}
+  .filter-label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.6px;
+    color:var(--text-dim);
+    width:70px;
+    flex-shrink:0;
+  }
+  .chip{
+    background:var(--panel-2);
+    border:1px solid var(--border);
+    color:var(--text-dim);
+    font-size:12.5px;
+    padding:6px 13px;
+    border-radius:16px;
+    cursor:pointer;
+    user-select:none;
+    transition:all .12s ease;
+  }
+  .chip:hover{border-color:var(--comunicado);color:var(--text);}
+  .chip.active{
+    background:var(--comunicado);
+    border-color:var(--comunicado);
+    color:#fff;
+    font-weight:600;
+  }
+  .clear-btn{
+    margin-left:auto;
+    background:transparent;
+    border:1px solid var(--border);
+    color:var(--text-dim);
+    font-size:12px;
+    padding:6px 14px;
+    border-radius:16px;
+    cursor:pointer;
+  }
+  .clear-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .kpi-grid{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:14px;
+    margin-bottom:20px;
+  }
+  .kpi-card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px 16px 14px;
+  }
+  .kpi-card .label{
+    font-size:11.5px;
+    color:var(--text-dim);
+    margin-bottom:8px;
+    text-transform:uppercase;
+    letter-spacing:.4px;
+  }
+  .kpi-card .value{
+    font-size:26px;
+    font-weight:700;
+    line-height:1.1;
+  }
+  .kpi-card .sub{
+    font-size:11.5px;
+    color:var(--text-dim);
+    margin-top:6px;
+  }
+  .funnel-card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:20px 22px;
+    margin-bottom:20px;
+  }
+  .funnel-card h3{
+    margin:0 0 16px;
+    font-size:14px;
+    color:var(--text-dim);
+    text-transform:uppercase;
+    letter-spacing:.5px;
+    font-weight:600;
+  }
+  .funnel{
+    display:flex;
+    align-items:stretch;
+    gap:8px;
+  }
+  .funnel-step{
+    flex:1;
+    background:var(--panel-2);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:14px 10px;
+    text-align:center;
+    position:relative;
+  }
+  .funnel-step .step-name{
+    font-size:11.5px;
+    color:var(--text-dim);
+    margin-bottom:8px;
+  }
+  .funnel-step .step-value{
+    font-size:22px;
+    font-weight:700;
+  }
+  .funnel-step .step-pct{
+    font-size:12px;
+    color:var(--accent);
+    margin-top:6px;
+    font-weight:600;
+  }
+  .funnel-arrow{
+    align-self:center;
+    color:var(--text-dim);
+    font-size:18px;
+    padding:0 2px;
+  }
+  .charts-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+  }
+  .chart-card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:18px 20px;
+  }
+  .chart-card.full{
+    grid-column:1 / -1;
+  }
+  .chart-card h3{
+    margin:0 0 2px;
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--text);
+  }
+  .chart-card .hint{
+    font-size:11px;
+    color:var(--text-dim);
+    margin-bottom:10px;
+  }
+  .chart-wrap{
+    position:relative;
+    height:260px;
+  }
+  .chart-card.full .chart-wrap{height:320px;}
+  footer{
+    text-align:center;
+    color:var(--text-dim);
+    font-size:11.5px;
+    margin-top:28px;
+  }
+  @media (max-width:1100px){
+    .kpi-grid{grid-template-columns:repeat(3,1fr);}
+    .charts-grid{grid-template-columns:1fr;}
+  }
+  @media (max-width:640px){
+    .kpi-grid{grid-template-columns:repeat(2,1fr);}
+    .funnel{flex-direction:column;}
+    .funnel-arrow{transform:rotate(90deg);}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Dashboard de Incentivos + Comunicaciones</h1>
+    <div class="sub">Impacto de comunicaciones (Braze) sobre la performance de RTs · <span id="dateRangeLabel"></span></div>
+  </div>
+  <span class="badge">ACTIVATION</span>
+</header>
+
+<div class="filters">
+  <div class="filter-row">
+    <span class="filter-label">País</span>
+    <div id="countryChips"></div>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Tag</span>
+    <div id="tagChips"></div>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Semana</span>
+    <div id="weekChips" style="display:flex;gap:10px;flex-wrap:wrap;flex:1;"></div>
+    <button class="clear-btn" id="clearBtn">Limpiar filtros</button>
+  </div>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="label">Incentivos totales</div>
+    <div class="value" id="kpiIncTotal">–</div>
+    <div class="sub" id="kpiIncTotalSub">–</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">% Incentivos con comms</div>
+    <div class="value" id="kpiIncCommsPct">–</div>
+    <div class="sub">del total de incentivos</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Comm rate</div>
+    <div class="value" id="kpiCommRate">–</div>
+    <div class="sub">RTs comunicados / segmentados (sin control)</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Sub rate comunicados</div>
+    <div class="value" id="kpiSubRateCom">–</div>
+    <div class="sub" id="kpiSubRateComSub">–</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Sub rate no comunicados</div>
+    <div class="value" id="kpiSubRateNoCom">–</div>
+    <div class="sub" id="kpiSubRateNoComSub">–</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Win rate comunicados</div>
+    <div class="value" id="kpiWinRateCom">–</div>
+    <div class="sub" id="kpiWinRateComSub">–</div>
+  </div>
+</div>
+
+<div class="funnel-card">
+  <h3>Funnel de conversión</h3>
+  <div class="funnel" id="funnel"></div>
+</div>
+
+<div class="charts-grid">
+  <div class="chart-card">
+    <h3>Sub rate semanal</h3>
+    <div class="hint">% de RTs suscritos por semana, por grupo</div>
+    <div class="chart-wrap"><canvas id="chartSubRate"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <h3>Win rate semanal</h3>
+    <div class="hint">% de suscritos que ganan por semana, por grupo</div>
+    <div class="chart-wrap"><canvas id="chartWinRate"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <h3>Avg horas por RT semanal</h3>
+    <div class="hint">Query 2 · promedio ponderado por RTs · el filtro de tag no aplica</div>
+    <div class="chart-wrap"><canvas id="chartAvgHours"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <h3>Avg órdenes por RT semanal</h3>
+    <div class="hint">Query 2 · promedio ponderado por RTs · el filtro de tag no aplica</div>
+    <div class="chart-wrap"><canvas id="chartAvgOrders"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <h3>Comm rate semanal</h3>
+    <div class="hint">% RTs comunicados vs. % incentivos con comms</div>
+    <div class="chart-wrap"><canvas id="chartCommRateWeekly"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <h3>Comm rate por país</h3>
+    <div class="hint">Semáforo: rojo &lt;30% · amarillo 30–50% · verde ≥50%</div>
+    <div class="chart-wrap"><canvas id="chartCommRateCountry"></canvas></div>
+  </div>
+  <div class="chart-card full">
+    <h3>Métricas por tag</h3>
+    <div class="hint">Comm rate, sub rate y win rate (comunicados / no comunicados) por tag</div>
+    <div class="chart-wrap"><canvas id="chartTagMetrics"></canvas></div>
+  </div>
+</div>
+
+<footer>Fuente: Snowflake (SKID) · incentive_classification = Activation · ventana: current_date-42d a current_date-1d · datos embebidos, se actualiza semanalmente</footer>
+
+<script>
+const DATA = {"weeks":["2026-06-29","2026-07-06","2026-07-13","2026-07-20","2026-07-27","2026-08-03"],"countries":["AR","BR","CL","CO","MX","PE"],"tags":["Activation"],"metrics":[{"week":"2026-06-29","country":"AR","tag":"Activation","NUM_INCENTIVOS":18,"INCENTIVOS_CON_COMMS":4,"RTS_COMUNICADOS":3345,"RTS_NO_COMUNICADOS":217774,"RTS_CONTROL":64899,"SUBS_COMUNICADOS":3345,"SUBS_NO_COMUNICADOS":20104,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":20,"WINNERS_NO_COMUNICADOS":183,"WINNERS_CONTROL":0},{"week":"2026-06-29","country":"BR","tag":"Activation","NUM_INCENTIVOS":21,"INCENTIVOS_CON_COMMS":0,"RTS_COMUNICADOS":0,"RTS_NO_COMUNICADOS":505722,"RTS_CONTROL":156846,"SUBS_COMUNICADOS":0,"SUBS_NO_COMUNICADOS":353,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":0,"WINNERS_NO_COMUNICADOS":113,"WINNERS_CONTROL":0},{"week":"2026-06-29","country":"CL","tag":"Activation","NUM_INCENTIVOS":126,"INCENTIVOS_CON_COMMS":0,"RTS_COMUNICADOS":0,"RTS_NO_COMUNICADOS":123865,"RTS_CONTROL":38367,"SUBS_COMUNICADOS":0,"SUBS_NO_COMUNICADOS":183,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":0,"WINNERS_NO_COMUNICADOS":107,"WINNERS_CONTROL":0},{"week":"2026-06-29","country":"CO","tag":"Activation","NUM_INCENTIVOS":28,"INCENTIVOS_CON_COMMS":28,"RTS_COMUNICADOS":118,"RTS_NO_COMUNICADOS":321553,"RTS_CONTROL":90304,"SUBS_COMUNICADOS":0,"SUBS_NO_COMUNICADOS":339,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":0,"WINNERS_NO_COMUNICADOS":199,"WINNERS_CONTROL":0},{"week":"2026-06-29","country":"MX","tag":"Activation","NUM_INCENTIVOS":410,"INCENTIVOS_CON_COMMS":0,"RTS_COMUNICADOS":0,"RTS_NO_COMUNICADOS":502257,"RTS_CONTROL":153946,"SUBS_COMUNICADOS":0,"SUBS_NO_COMUNICADOS":502257,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":0,"WINNERS_NO_COMUNICADOS":1002,"WINNERS_CONTROL":0},{"week":"2026-06-29","country":"PE","tag":"Activation","NUM_INCENTIVOS":28,"INCENTIVOS_CON_COMMS":0,"RTS_COMUNICADOS":0,"RTS_NO_COMUNICADOS":88234,"RTS_CONTROL":27288,"SUBS_COMUNICADOS":0,"SUBS_NO_COMUNICADOS":229,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":0,"WINNERS_NO_COMUNICADOS":172,"WINNERS_CONTROL":0},{"week":"2026-07-06","country":"AR","tag":"Activation","NUM_INCENTIVOS":16,"INCENTIVOS_CON_COMMS":0,"RTS_COMUNICADOS":0,"RTS_NO_COMUNICADOS":198286,"RTS_CONTROL":61808,"SUBS_COMUNICADOS":0,"SUBS_NO_COMUNICADOS":311,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":0,"WINNERS_NO_COMUNICADOS":184,"WINNERS_CONTROL":0},{"week":"2026-07-06","country":"BR","tag":"Activation","NUM_INCENTIVOS":24,"INCENTIVOS_CON_COMMS":0,"RTS_COMUNICADOS":0,"RTS_NO_COMUNICADOS":506056,"RTS_CONTROL":159621,"SUBS_COMUNICADOS":0,"SUBS_NO_COMUNICADOS":294,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":0,"WINNERS_NO_COMUNICADOS":93,"WINNERS_CONTROL":0},{"week":"2026-07-06","country":"CL","tag":"Activation","NUM_INCENTIVOS":126,"INCENTIVOS_CON_COMMS":0,"RTS_COMUNICADOS":0,"RTS_NO_COMUNICADOS":124215,"RTS_CONTROL":38815,"SUBS_COMUNICADOS":0,"SUBS_NO_COMUNICADOS":241,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":0,"WINNERS_NO_COMUNICADOS":144,"WINNERS_CONTROL":0},{"week":"2026-07-06","country":"CO","tag":"Activation","NUM_INCENTIVOS":31,"INCENTIVOS_CON_COMMS":31,"RTS_COMUNICADOS":113,"RTS_NO_COMUNICADOS":322071,"RTS_CONTROL":95164,"SUBS_COMUNICADOS":0,"SUBS_NO_COMUNICADOS":471,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":0,"WINNERS_NO_COMUNICADOS":302,"WINNERS_CONTROL":0},{"week":"2026-07-06","country":"MX","tag":"Activation","NUM_INCENTIVOS":130,"INCENTIVOS_CON_COMMS":0,"RTS_COMUNICADOS":0,"RTS_NO_COMUNICADOS":499759,"RTS_CONTROL":107676,"SUBS_COMUNICADOS":0,"SUBS_NO_COMUNICADOS":499759,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":0,"WINNERS_NO_COMUNICADOS":692,"WINNERS_CONTROL":0},{"week":"2026-07-06","country":"PE","tag":"Activation","NUM_INCENTIVOS":14,"INCENTIVOS_CON_COMMS":0,"RTS_COMUNICADOS":0,"RTS_NO_COMUNICADOS":88345,"RTS_CONTROL":25123,"SUBS_COMUNICADOS":0,"SUBS_NO_COMUNICADOS":153,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":0,"WINNERS_NO_COMUNICADOS":104,"WINNERS_CONTROL":0},{"week":"2026-07-13","country":"AR","tag":"Activation","NUM_INCENTIVOS":16,"INCENTIVOS_CON_COMMS":0,"RTS_COMUNICADOS":0,"RTS_NO_COMUNICADOS":201785,"RTS_CONTROL":63389,"SUBS_COMUNICADOS":0,"SUBS_NO_COMUNICADOS":399,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":0,"WINNERS_NO_COMUNICADOS":221,"WINNERS_CONTROL":0},{"week":"2026-07-13","country":"BR","tag":"Activation","NUM_INCENTIVOS":21,"INCENTIVOS_CON_COMMS":0,"RTS_COMUNICADOS":0,"RTS_NO_COMUNICADOS":506880,"RTS_CONTROL":162138,"SUBS_COMUNICADOS":0,"SUBS_NO_COMUNICADOS":320,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":0,"WINNERS_NO_COMUNICADOS":82,"WINNERS_CONTROL":0},{"week":"2026-07-13","country":"CL","tag":"Activation","NUM_INCENTIVOS":126,"INCENTIVOS_CON_COMMS":0,"RTS_COMUNICADOS":0,"RTS_NO_COMUNICADOS":124507,"RTS_CONTROL":39809,"SUBS_COMUNICADOS":0,"SUBS_NO_COMUNICADOS":247,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":0,"WINNERS_NO_COMUNICADOS":119,"WINNERS_CONTROL":0},{"week":"2026-07-13","country":"CO","tag":"Activation","NUM_INCENTIVOS":29,"INCENTIVOS_CON_COMMS":29,"RTS_COMUNICADOS":112,"RTS_NO_COMUNICADOS":322692,"RTS_CONTROL":91094,"SUBS_COMUNICADOS":0,"SUBS_NO_COMUNICADOS":445,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":0,"WINNERS_NO_COMUNICADOS":287,"WINNERS_CONTROL":0},{"week":"2026-07-13","country":"MX","tag":"Activation","NUM_INCENTIVOS":21,"INCENTIVOS_CON_COMMS":0,"RTS_COMUNICADOS":0,"RTS_NO_COMUNICADOS":276996,"RTS_CONTROL":88276,"SUBS_COMUNICADOS":0,"SUBS_NO_COMUNICADOS":276996,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":0,"WINNERS_NO_COMUNICADOS":688,"WINNERS_CONTROL":0},{"week":"2026-07-13","country":"PE","tag":"Activation","NUM_INCENTIVOS":7,"INCENTIVOS_CON_COMMS":0,"RTS_COMUNICADOS":0,"RTS_NO_COMUNICADOS":75991,"RTS_CONTROL":24154,"SUBS_COMUNICADOS":0,"SUBS_NO_COMUNICADOS":151,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":0,"WINNERS_NO_COMUNICADOS":108,"WINNERS_CONTROL":0},{"week":"2026-07-20","country":"AR","tag":"Activation","NUM_INCENTIVOS":21,"INCENTIVOS_CON_COMMS":0,"RTS_COMUNICADOS":0,"RTS_NO_COMUNICADOS":202235,"RTS_CONTROL":59404,"SUBS_COMUNICADOS":0,"SUBS_NO_COMUNICADOS":402,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":0,"WINNERS_NO_COMUNICADOS":245,"WINNERS_CONTROL":0},{"week":"2026-07-20","country":"BR","tag":"Activation","NUM_INCENTIVOS":23,"INCENTIVOS_CON_COMMS":15,"RTS_COMUNICADOS":24437,"RTS_NO_COMUNICADOS":804402,"RTS_CONTROL":168048,"SUBS_COMUNICADOS":208,"SUBS_NO_COMUNICADOS":281,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":64,"WINNERS_NO_COMUNICADOS":58,"WINNERS_CONTROL":0},{"week":"2026-07-20","country":"CL","tag":"Activation","NUM_INCENTIVOS":126,"INCENTIVOS_CON_COMMS":0,"RTS_COMUNICADOS":0,"RTS_NO_COMUNICADOS":124800,"RTS_CONTROL":37465,"SUBS_COMUNICADOS":0,"SUBS_NO_COMUNICADOS":286,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":0,"WINNERS_NO_COMUNICADOS":139,"WINNERS_CONTROL":0},{"week":"2026-07-20","country":"CO","tag":"Activation","NUM_INCENTIVOS":29,"INCENTIVOS_CON_COMMS":29,"RTS_COMUNICADOS":132,"RTS_NO_COMUNICADOS":323482,"RTS_CONTROL":88424,"SUBS_COMUNICADOS":2,"SUBS_NO_COMUNICADOS":466,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":2,"WINNERS_NO_COMUNICADOS":296,"WINNERS_CONTROL":0},{"week":"2026-07-20","country":"MX","tag":"Activation","NUM_INCENTIVOS":21,"INCENTIVOS_CON_COMMS":0,"RTS_COMUNICADOS":0,"RTS_NO_COMUNICADOS":277853,"RTS_CONTROL":83022,"SUBS_COMUNICADOS":0,"SUBS_NO_COMUNICADOS":277853,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":0,"WINNERS_NO_COMUNICADOS":787,"WINNERS_CONTROL":0},{"week":"2026-07-20","country":"PE","tag":"Activation","NUM_INCENTIVOS":7,"INCENTIVOS_CON_COMMS":0,"RTS_COMUNICADOS":0,"RTS_NO_COMUNICADOS":76275,"RTS_CONTROL":22602,"SUBS_COMUNICADOS":0,"SUBS_NO_COMUNICADOS":161,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":0,"WINNERS_NO_COMUNICADOS":113,"WINNERS_CONTROL":0},{"week":"2026-07-27","country":"AR","tag":"Activation","NUM_INCENTIVOS":21,"INCENTIVOS_CON_COMMS":0,"RTS_COMUNICADOS":0,"RTS_NO_COMUNICADOS":203486,"RTS_CONTROL":61832,"SUBS_COMUNICADOS":0,"SUBS_NO_COMUNICADOS":490,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":0,"WINNERS_NO_COMUNICADOS":300,"WINNERS_CONTROL":0},{"week":"2026-07-27","country":"BR","tag":"Activation","NUM_INCENTIVOS":21,"INCENTIVOS_CON_COMMS":21,"RTS_COMUNICADOS":24983,"RTS_NO_COMUNICADOS":484645,"RTS_CONTROL":157429,"SUBS_COMUNICADOS":251,"SUBS_NO_COMUNICADOS":77,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":75,"WINNERS_NO_COMUNICADOS":15,"WINNERS_CONTROL":0},{"week":"2026-07-27","country":"CL","tag":"Activation","NUM_INCENTIVOS":126,"INCENTIVOS_CON_COMMS":0,"RTS_COMUNICADOS":0,"RTS_NO_COMUNICADOS":125363,"RTS_CONTROL":38747,"SUBS_COMUNICADOS":0,"SUBS_NO_COMUNICADOS":314,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":0,"WINNERS_NO_COMUNICADOS":139,"WINNERS_CONTROL":0},{"week":"2026-07-27","country":"CO","tag":"Activation","NUM_INCENTIVOS":32,"INCENTIVOS_CON_COMMS":32,"RTS_COMUNICADOS":128,"RTS_NO_COMUNICADOS":324292,"RTS_CONTROL":97647,"SUBS_COMUNICADOS":1,"SUBS_NO_COMUNICADOS":572,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":0,"WINNERS_NO_COMUNICADOS":357,"WINNERS_CONTROL":0},{"week":"2026-07-27","country":"MX","tag":"Activation","NUM_INCENTIVOS":35,"INCENTIVOS_CON_COMMS":0,"RTS_COMUNICADOS":0,"RTS_NO_COMUNICADOS":318894,"RTS_CONTROL":91113,"SUBS_COMUNICADOS":0,"SUBS_NO_COMUNICADOS":318894,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":0,"WINNERS_NO_COMUNICADOS":780,"WINNERS_CONTROL":0},{"week":"2026-07-27","country":"PE","tag":"Activation","NUM_INCENTIVOS":7,"INCENTIVOS_CON_COMMS":0,"RTS_COMUNICADOS":0,"RTS_NO_COMUNICADOS":76717,"RTS_CONTROL":23699,"SUBS_COMUNICADOS":0,"SUBS_NO_COMUNICADOS":196,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":0,"WINNERS_NO_COMUNICADOS":135,"WINNERS_CONTROL":0},{"week":"2026-08-03","country":"AR","tag":"Activation","NUM_INCENTIVOS":21,"INCENTIVOS_CON_COMMS":6,"RTS_COMUNICADOS":27872,"RTS_NO_COMUNICADOS":204116,"RTS_CONTROL":61027,"SUBS_COMUNICADOS":175,"SUBS_NO_COMUNICADOS":437,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":99,"WINNERS_NO_COMUNICADOS":246,"WINNERS_CONTROL":0},{"week":"2026-08-03","country":"BR","tag":"Activation","NUM_INCENTIVOS":21,"INCENTIVOS_CON_COMMS":21,"RTS_COMUNICADOS":24745,"RTS_NO_COMUNICADOS":484879,"RTS_CONTROL":154877,"SUBS_COMUNICADOS":252,"SUBS_NO_COMUNICADOS":69,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":70,"WINNERS_NO_COMUNICADOS":11,"WINNERS_CONTROL":0},{"week":"2026-08-03","country":"CL","tag":"Activation","NUM_INCENTIVOS":126,"INCENTIVOS_CON_COMMS":36,"RTS_COMUNICADOS":8073,"RTS_NO_COMUNICADOS":125657,"RTS_CONTROL":38333,"SUBS_COMUNICADOS":96,"SUBS_NO_COMUNICADOS":234,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":45,"WINNERS_NO_COMUNICADOS":118,"WINNERS_CONTROL":0},{"week":"2026-08-03","country":"CO","tag":"Activation","NUM_INCENTIVOS":33,"INCENTIVOS_CON_COMMS":33,"RTS_COMUNICADOS":27982,"RTS_NO_COMUNICADOS":324773,"RTS_CONTROL":97780,"SUBS_COMUNICADOS":195,"SUBS_NO_COMUNICADOS":447,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":106,"WINNERS_NO_COMUNICADOS":277,"WINNERS_CONTROL":0},{"week":"2026-08-03","country":"MX","tag":"Activation","NUM_INCENTIVOS":304,"INCENTIVOS_CON_COMMS":0,"RTS_COMUNICADOS":0,"RTS_NO_COMUNICADOS":430519,"RTS_CONTROL":113102,"SUBS_COMUNICADOS":0,"SUBS_NO_COMUNICADOS":430519,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":0,"WINNERS_NO_COMUNICADOS":840,"WINNERS_CONTROL":0},{"week":"2026-08-03","country":"PE","tag":"Activation","NUM_INCENTIVOS":11,"INCENTIVOS_CON_COMMS":6,"RTS_COMUNICADOS":8920,"RTS_NO_COMUNICADOS":82383,"RTS_CONTROL":23931,"SUBS_COMUNICADOS":72,"SUBS_NO_COMUNICADOS":174,"SUBS_CONTROL":0,"WINNERS_COMUNICADOS":49,"WINNERS_NO_COMUNICADOS":120,"WINNERS_CONTROL":0}],"productivity":[{"week":"2026-06-29","country":"AR","group":"COMUNICADO","rts":3345,"avg_hours":0.04,"avg_orders":0.05},{"week":"2026-06-29","country":"AR","group":"CONTROL","rts":64899,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-06-29","country":"AR","group":"NO_COMUNICADO","rts":217774,"avg_hours":0.02,"avg_orders":0.02},{"week":"2026-06-29","country":"BR","group":"CONTROL","rts":156846,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-06-29","country":"BR","group":"NO_COMUNICADO","rts":505722,"avg_hours":0.01,"avg_orders":0.0},{"week":"2026-06-29","country":"CL","group":"CONTROL","rts":38367,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-06-29","country":"CL","group":"NO_COMUNICADO","rts":123865,"avg_hours":0.01,"avg_orders":0.01},{"week":"2026-06-29","country":"CO","group":"COMUNICADO","rts":118,"avg_hours":null,"avg_orders":null},{"week":"2026-06-29","country":"CO","group":"CONTROL","rts":90304,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-06-29","country":"CO","group":"NO_COMUNICADO","rts":321553,"avg_hours":0.01,"avg_orders":0.01},{"week":"2026-06-29","country":"MX","group":"CONTROL","rts":153946,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-06-29","country":"MX","group":"NO_COMUNICADO","rts":502257,"avg_hours":0.03,"avg_orders":0.03},{"week":"2026-06-29","country":"PE","group":"CONTROL","rts":27288,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-06-29","country":"PE","group":"NO_COMUNICADO","rts":88234,"avg_hours":0.02,"avg_orders":0.04},{"week":"2026-07-06","country":"AR","group":"CONTROL","rts":61808,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-07-06","country":"AR","group":"NO_COMUNICADO","rts":198286,"avg_hours":0.02,"avg_orders":0.02},{"week":"2026-07-06","country":"BR","group":"CONTROL","rts":159621,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-07-06","country":"BR","group":"NO_COMUNICADO","rts":506056,"avg_hours":0.01,"avg_orders":0.0},{"week":"2026-07-06","country":"CL","group":"CONTROL","rts":38815,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-07-06","country":"CL","group":"NO_COMUNICADO","rts":124215,"avg_hours":0.02,"avg_orders":0.02},{"week":"2026-07-06","country":"CO","group":"COMUNICADO","rts":113,"avg_hours":null,"avg_orders":null},{"week":"2026-07-06","country":"CO","group":"CONTROL","rts":95164,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-07-06","country":"CO","group":"NO_COMUNICADO","rts":322071,"avg_hours":0.01,"avg_orders":0.01},{"week":"2026-07-06","country":"MX","group":"CONTROL","rts":107676,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-07-06","country":"MX","group":"NO_COMUNICADO","rts":499759,"avg_hours":0.02,"avg_orders":0.01},{"week":"2026-07-06","country":"PE","group":"CONTROL","rts":25123,"avg_hours":0.0,"avg_orders":0.01},{"week":"2026-07-06","country":"PE","group":"NO_COMUNICADO","rts":88345,"avg_hours":0.02,"avg_orders":0.03},{"week":"2026-07-13","country":"AR","group":"CONTROL","rts":63389,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-07-13","country":"AR","group":"NO_COMUNICADO","rts":201785,"avg_hours":0.02,"avg_orders":0.02},{"week":"2026-07-13","country":"BR","group":"CONTROL","rts":162138,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-07-13","country":"BR","group":"NO_COMUNICADO","rts":506880,"avg_hours":0.01,"avg_orders":0.0},{"week":"2026-07-13","country":"CL","group":"CONTROL","rts":39809,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-07-13","country":"CL","group":"NO_COMUNICADO","rts":124507,"avg_hours":0.02,"avg_orders":0.01},{"week":"2026-07-13","country":"CO","group":"COMUNICADO","rts":112,"avg_hours":null,"avg_orders":null},{"week":"2026-07-13","country":"CO","group":"CONTROL","rts":91094,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-07-13","country":"CO","group":"NO_COMUNICADO","rts":322692,"avg_hours":0.01,"avg_orders":0.01},{"week":"2026-07-13","country":"MX","group":"CONTROL","rts":88276,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-07-13","country":"MX","group":"NO_COMUNICADO","rts":276996,"avg_hours":0.02,"avg_orders":0.02},{"week":"2026-07-13","country":"PE","group":"CONTROL","rts":24154,"avg_hours":0.0,"avg_orders":0.01},{"week":"2026-07-13","country":"PE","group":"NO_COMUNICADO","rts":75991,"avg_hours":0.02,"avg_orders":0.03},{"week":"2026-07-20","country":"AR","group":"CONTROL","rts":59404,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-07-20","country":"AR","group":"NO_COMUNICADO","rts":202235,"avg_hours":0.02,"avg_orders":0.02},{"week":"2026-07-20","country":"BR","group":"COMUNICADO","rts":24437,"avg_hours":0.11,"avg_orders":0.02},{"week":"2026-07-20","country":"BR","group":"CONTROL","rts":152227,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-07-20","country":"BR","group":"NO_COMUNICADO","rts":507178,"avg_hours":0.01,"avg_orders":0.0},{"week":"2026-07-20","country":"CL","group":"CONTROL","rts":37465,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-07-20","country":"CL","group":"NO_COMUNICADO","rts":124800,"avg_hours":0.02,"avg_orders":0.01},{"week":"2026-07-20","country":"CO","group":"COMUNICADO","rts":132,"avg_hours":0.13,"avg_orders":0.13},{"week":"2026-07-20","country":"CO","group":"CONTROL","rts":88424,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-07-20","country":"CO","group":"NO_COMUNICADO","rts":323482,"avg_hours":0.01,"avg_orders":0.01},{"week":"2026-07-20","country":"MX","group":"CONTROL","rts":83022,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-07-20","country":"MX","group":"NO_COMUNICADO","rts":277853,"avg_hours":0.03,"avg_orders":0.02},{"week":"2026-07-20","country":"PE","group":"CONTROL","rts":22602,"avg_hours":0.0,"avg_orders":0.01},{"week":"2026-07-20","country":"PE","group":"NO_COMUNICADO","rts":76275,"avg_hours":0.02,"avg_orders":0.02},{"week":"2026-07-27","country":"AR","group":"CONTROL","rts":61832,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-07-27","country":"AR","group":"NO_COMUNICADO","rts":203486,"avg_hours":0.02,"avg_orders":0.02},{"week":"2026-07-27","country":"BR","group":"COMUNICADO","rts":24983,"avg_hours":0.13,"avg_orders":0.03},{"week":"2026-07-27","country":"BR","group":"CONTROL","rts":157429,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-07-27","country":"BR","group":"NO_COMUNICADO","rts":484645,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-07-27","country":"CL","group":"CONTROL","rts":38747,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-07-27","country":"CL","group":"NO_COMUNICADO","rts":125363,"avg_hours":0.02,"avg_orders":0.01},{"week":"2026-07-27","country":"CO","group":"COMUNICADO","rts":128,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-07-27","country":"CO","group":"CONTROL","rts":97647,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-07-27","country":"CO","group":"NO_COMUNICADO","rts":324292,"avg_hours":0.01,"avg_orders":0.01},{"week":"2026-07-27","country":"MX","group":"CONTROL","rts":91113,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-07-27","country":"MX","group":"NO_COMUNICADO","rts":318894,"avg_hours":0.02,"avg_orders":0.02},{"week":"2026-07-27","country":"PE","group":"CONTROL","rts":23699,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-07-27","country":"PE","group":"NO_COMUNICADO","rts":76717,"avg_hours":0.02,"avg_orders":0.03},{"week":"2026-08-03","country":"AR","group":"COMUNICADO","rts":27872,"avg_hours":0.04,"avg_orders":0.05},{"week":"2026-08-03","country":"AR","group":"CONTROL","rts":61027,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-08-03","country":"AR","group":"NO_COMUNICADO","rts":204116,"avg_hours":0.02,"avg_orders":0.02},{"week":"2026-08-03","country":"BR","group":"COMUNICADO","rts":24745,"avg_hours":0.13,"avg_orders":0.03},{"week":"2026-08-03","country":"BR","group":"CONTROL","rts":154877,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-08-03","country":"BR","group":"NO_COMUNICADO","rts":484879,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-08-03","country":"CL","group":"COMUNICADO","rts":8073,"avg_hours":0.06,"avg_orders":0.05},{"week":"2026-08-03","country":"CL","group":"CONTROL","rts":38333,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-08-03","country":"CL","group":"NO_COMUNICADO","rts":125657,"avg_hours":0.01,"avg_orders":0.01},{"week":"2026-08-03","country":"CO","group":"COMUNICADO","rts":27982,"avg_hours":0.05,"avg_orders":0.05},{"week":"2026-08-03","country":"CO","group":"CONTROL","rts":97780,"avg_hours":0.0,"avg_orders":0.0},{"week":"2026-08-03","country":"CO","group":"NO_COMUNICADO","rts":324773,"avg_hours":0.01,"avg_orders":0.01},{"week":"2026-08-03","country":"MX","group":"CONTROL","rts":113102,"avg_hours":0.01,"avg_orders":0.0},{"week":"2026-08-03","country":"MX","group":"NO_COMUNICADO","rts":430519,"avg_hours":0.02,"avg_orders":0.01},{"week":"2026-08-03","country":"PE","group":"COMUNICADO","rts":8920,"avg_hours":0.05,"avg_orders":0.08},{"week":"2026-08-03","country":"PE","group":"CONTROL","rts":23931,"avg_hours":0.0,"avg_orders":0.01},{"week":"2026-08-03","country":"PE","group":"NO_COMUNICADO","rts":82383,"avg_hours":0.02,"avg_orders":0.03}],"date_range":{"start":"2026-06-29","end":"2026-08-03"},"incentive_classification":"Activation"};
+
+// ---------- state ----------
+const state = { countries:new Set(), tags:new Set(), weeks:new Set() };
+let charts = {};
+
+// ---------- helpers ----------
+const fmtInt = n => Math.round(n).toLocaleString('es-AR');
+const fmtPct = (n, d=1) => (isFinite(n) ? n.toFixed(d) : '0.0') + '%';
+const safeDiv = (a,b) => b>0 ? (a/b*100) : 0;
+const weekLabel = w => {
+  const d = new Date(w+'T00:00:00');
+  return d.toLocaleDateString('es-AR',{day:'2-digit',month:'short'});
+};
+
+function matchFilters(row){
+  if(state.countries.size && !state.countries.has(row.country)) return false;
+  if(state.tags.size && row.tag !== undefined && !state.tags.has(row.tag)) return false;
+  if(state.weeks.size && !state.weeks.has(row.week)) return false;
+  return true;
+}
+
+function filteredMetrics(){ return DATA.metrics.filter(matchFilters); }
+function filteredProductivity(){
+  // tag filter does not apply to productivity (Query 2 has no tag dimension)
+  return DATA.productivity.filter(r=>{
+    if(state.countries.size && !state.countries.has(r.country)) return false;
+    if(state.weeks.size && !state.weeks.has(r.week)) return false;
+    return true;
+  });
+}
+
+function sumField(rows, field){ return rows.reduce((s,r)=>s+(r[field]||0),0); }
+
+// ---------- filters UI ----------
+function renderChipGroup(container, items, selectedSet, labelFn){
+  container.innerHTML = '';
+  items.forEach(item=>{
+    const chip = document.createElement('span');
+    chip.className = 'chip' + (selectedSet.has(item) ? ' active' : '');
+    chip.textContent = labelFn ? labelFn(item) : item;
+    chip.onclick = () => {
+      if(selectedSet.has(item)) selectedSet.delete(item); else selectedSet.add(item);
+      renderAll();
+    };
+    container.appendChild(chip);
+  });
+}
+
+function renderFilters(){
+  renderChipGroup(document.getElementById('countryChips'), DATA.countries, state.countries);
+  renderChipGroup(document.getElementById('tagChips'), DATA.tags, state.tags);
+  renderChipGroup(document.getElementById('weekChips'), DATA.weeks, state.weeks, weekLabel);
+}
+
+document.getElementById('clearBtn').onclick = () => {
+  state.countries.clear(); state.tags.clear(); state.weeks.clear();
+  renderAll();
+};
+
+// ---------- KPIs ----------
+function renderKPIs(rows){
+  const numInc = sumField(rows,'NUM_INCENTIVOS');
+  const incComms = sumField(rows,'INCENTIVOS_CON_COMMS');
+  const rtsCom = sumField(rows,'RTS_COMUNICADOS');
+  const rtsNoCom = sumField(rows,'RTS_NO_COMUNICADOS');
+  const subsCom = sumField(rows,'SUBS_COMUNICADOS');
+  const subsNoCom = sumField(rows,'SUBS_NO_COMUNICADOS');
+  const winCom = sumField(rows,'WINNERS_COMUNICADOS');
+
+  document.getElementById('kpiIncTotal').textContent = fmtInt(numInc);
+  document.getElementById('kpiIncTotalSub').textContent = `${fmtInt(incComms)} con comms`;
+
+  document.getElementById('kpiIncCommsPct').textContent = fmtPct(safeDiv(incComms, numInc));
+
+  document.getElementById('kpiCommRate').textContent = fmtPct(safeDiv(rtsCom, rtsCom+rtsNoCom));
+
+  const subRateCom = safeDiv(subsCom, rtsCom);
+  document.getElementById('kpiSubRateCom').textContent = fmtPct(subRateCom);
+  document.getElementById('kpiSubRateComSub').textContent = `${fmtInt(subsCom)} / ${fmtInt(rtsCom)}`;
+
+  const subRateNoCom = safeDiv(subsNoCom, rtsNoCom);
+  document.getElementById('kpiSubRateNoCom').textContent = fmtPct(subRateNoCom);
+  document.getElementById('kpiSubRateNoComSub').textContent = `${fmtInt(subsNoCom)} / ${fmtInt(rtsNoCom)}`;
+
+  const winRateCom = safeDiv(winCom, subsCom);
+  document.getElementById('kpiWinRateCom').textContent = fmtPct(winRateCom);
+  document.getElementById('kpiWinRateComSub').textContent = `${fmtInt(winCom)} / ${fmtInt(subsCom)}`;
+}
+
+// ---------- funnel ----------
+function renderFunnel(rows){
+  const rtsCom = sumField(rows,'RTS_COMUNICADOS');
+  const rtsNoCom = sumField(rows,'RTS_NO_COMUNICADOS');
+  const rtsCtrl = sumField(rows,'RTS_CONTROL');
+  const subsCom = sumField(rows,'SUBS_COMUNICADOS');
+  const subsNoCom = sumField(rows,'SUBS_NO_COMUNICADOS');
+  const winCom = sumField(rows,'WINNERS_COMUNICADOS');
+
+  const segmentados = rtsCom + rtsNoCom + rtsCtrl;
+  const noControl = rtsCom + rtsNoCom;
+  const subsTotales = subsCom + subsNoCom;
+
+  const steps = [
+    {name:'RTs segmentados', value:segmentados, pct:null},
+    {name:'RTs comunicados', value:rtsCom, pct:safeDiv(rtsCom, segmentados)},
+    {name:'Suscritos (totales)', value:subsTotales, pct:safeDiv(subsTotales, noControl)},
+    {name:'Suscritos com.', value:subsCom, pct:safeDiv(subsCom, rtsCom)},
+    {name:'Ganadores com.', value:winCom, pct:safeDiv(winCom, subsCom)},
+  ];
+
+  const el = document.getElementById('funnel');
+  el.innerHTML = '';
+  steps.forEach((s,i)=>{
+    if(i>0){
+      const arrow = document.createElement('div');
+      arrow.className='funnel-arrow';
+      arrow.textContent='→';
+      el.appendChild(arrow);
+    }
+    const div = document.createElement('div');
+    div.className='funnel-step';
+    div.innerHTML = `<div class="step-name">${s.name}</div>
+      <div class="step-value">${fmtInt(s.value)}</div>
+      ${s.pct!==null ? `<div class="step-pct">${fmtPct(s.pct)}</div>` : '<div class="step-pct" style="visibility:hidden">–</div>'}`;
+    el.appendChild(div);
+  });
+}
+
+// ---------- chart helpers ----------
+const CHART_DEFAULTS = {
+  color:'#9aa2b4',
+  font:{family:'inherit',size:11}
+};
+
+function baseLineOpts(pctAxis=true){
+  return {
+    responsive:true,
+    maintainAspectRatio:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{
+      legend:{labels:{color:'#e8eaf0',boxWidth:12,font:{size:11}}},
+      tooltip:{backgroundColor:'#1c212e',borderColor:'#2a3040',borderWidth:1}
+    },
+    scales:{
+      x:{ticks:{color:'#9aa2b4',font:{size:10}},grid:{color:'#232838'}},
+      y:{ticks:{color:'#9aa2b4',font:{size:10},callback:v=>pctAxis?v+'%':v},grid:{color:'#232838'},beginAtZero:true}
+    }
+  };
+}
+
+function destroyChart(id){ if(charts[id]){ charts[id].destroy(); delete charts[id]; } }
+
+function groupBy(rows, key){
+  const m = new Map();
+  rows.forEach(r=>{
+    const k = r[key];
+    if(!m.has(k)) m.set(k, []);
+    m.get(k).push(r);
+  });
+  return m;
+}
+
+// ---------- weekly rate charts (sub rate / win rate) ----------
+function renderRateChart(canvasId, rows, numField1, denField1, numField2, denField2, numField3, denField3, title){
+  const weeksInOrder = DATA.weeks.filter(w => !state.weeks.size || state.weeks.has(w));
+  const byWeek = groupBy(rows, 'week');
+  const seriesCom=[], seriesNoCom=[], seriesCtrl=[];
+  weeksInOrder.forEach(w=>{
+    const wr = byWeek.get(w) || [];
+    seriesCom.push(safeDiv(sumField(wr,numField1), sumField(wr,denField1)));
+    seriesNoCom.push(safeDiv(sumField(wr,numField2), sumField(wr,denField2)));
+    seriesCtrl.push(safeDiv(sumField(wr,numField3), sumField(wr,denField3)));
+  });
+  destroyChart(canvasId);
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  charts[canvasId] = new Chart(ctx, {
+    type:'line',
+    data:{
+      labels: weeksInOrder.map(weekLabel),
+      datasets:[
+        {label:'Comunicado', data:seriesCom, borderColor:'#5d6cf0', backgroundColor:'#5d6cf0', tension:.3, pointRadius:3},
+        {label:'No comunicado', data:seriesNoCom, borderColor:'#f5b942', backgroundColor:'#f5b942', tension:.3, pointRadius:3},
+        {label:'Control', data:seriesCtrl, borderColor:'#8a93a6', backgroundColor:'#8a93a6', borderDash:[5,4], tension:.3, pointRadius:3},
+      ]
+    },
+    options: baseLineOpts(true)
+  });
+}
+
+// ---------- productivity charts ----------
+function renderProdChart(canvasId, prodRows, field){
+  const weeksInOrder = DATA.weeks.filter(w => !state.weeks.size || state.weeks.has(w));
+  const byWeek = groupBy(prodRows, 'week');
+  function weightedAvg(rows, group){
+    const gr = rows.filter(r=>r.group===group && r[field]!==null && r[field]!==undefined);
+    let wsum=0, vsum=0;
+    gr.forEach(r=>{ wsum += r.rts; vsum += r.rts*r[field]; });
+    return wsum>0 ? vsum/wsum : 0;
+  }
+  const seriesCom=[], seriesNoCom=[], seriesCtrl=[];
+  weeksInOrder.forEach(w=>{
+    const wr = byWeek.get(w) || [];
+    seriesCom.push(weightedAvg(wr,'COMUNICADO'));
+    seriesNoCom.push(weightedAvg(wr,'NO_COMUNICADO'));
+    seriesCtrl.push(weightedAvg(wr,'CONTROL'));
+  });
+  destroyChart(canvasId);
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  charts[canvasId] = new Chart(ctx, {
+    type:'line',
+    data:{
+      labels: weeksInOrder.map(weekLabel),
+      datasets:[
+        {label:'Comunicado', data:seriesCom, borderColor:'#5d6cf0', backgroundColor:'#5d6cf0', tension:.3, pointRadius:3},
+        {label:'No comunicado', data:seriesNoCom, borderColor:'#f5b942', backgroundColor:'#f5b942', tension:.3, pointRadius:3},
+        {label:'Control', data:seriesCtrl, borderColor:'#8a93a6', backgroundColor:'#8a93a6', borderDash:[5,4], tension:.3, pointRadius:3},
+      ]
+    },
+    options: baseLineOpts(false)
+  });
+}
+
+// ---------- comm rate weekly (2 lines) ----------
+function renderCommRateWeekly(rows){
+  const weeksInOrder = DATA.weeks.filter(w => !state.weeks.size || state.weeks.has(w));
+  const byWeek = groupBy(rows, 'week');
+  const seriesRts=[], seriesInc=[];
+  weeksInOrder.forEach(w=>{
+    const wr = byWeek.get(w) || [];
+    seriesRts.push(safeDiv(sumField(wr,'RTS_COMUNICADOS'), sumField(wr,'RTS_COMUNICADOS')+sumField(wr,'RTS_NO_COMUNICADOS')));
+    seriesInc.push(safeDiv(sumField(wr,'INCENTIVOS_CON_COMMS'), sumField(wr,'NUM_INCENTIVOS')));
+  });
+  destroyChart('chartCommRateWeekly');
+  const ctx = document.getElementById('chartCommRateWeekly').getContext('2d');
+  charts['chartCommRateWeekly'] = new Chart(ctx, {
+    type:'line',
+    data:{
+      labels: weeksInOrder.map(weekLabel),
+      datasets:[
+        {label:'% RTs comunicados', data:seriesRts, borderColor:'#5d6cf0', backgroundColor:'#5d6cf0', tension:.3, pointRadius:3},
+        {label:'% Incentivos con comms', data:seriesInc, borderColor:'#ff4d8d', backgroundColor:'#ff4d8d', tension:.3, pointRadius:3},
+      ]
+    },
+    options: baseLineOpts(true)
+  });
+}
+
+// ---------- comm rate by country (semaphore bars) ----------
+function renderCommRateCountry(rows){
+  const countriesInOrder = DATA.countries.filter(c => !state.countries.size || state.countries.has(c));
+  const byCountry = groupBy(rows, 'country');
+  const values = countriesInOrder.map(c=>{
+    const cr = byCountry.get(c) || [];
+    return safeDiv(sumField(cr,'RTS_COMUNICADOS'), sumField(cr,'RTS_COMUNICADOS')+sumField(cr,'RTS_NO_COMUNICADOS'));
+  });
+  const colors = values.map(v => v>=50 ? '#3ecf8e' : v>=30 ? '#f5b942' : '#f2545b');
+  destroyChart('chartCommRateCountry');
+  const ctx = document.getElementById('chartCommRateCountry').getContext('2d');
+  charts['chartCommRateCountry'] = new Chart(ctx, {
+    type:'bar',
+    data:{ labels: countriesInOrder, datasets:[{label:'Comm rate', data:values, backgroundColor:colors, borderRadius:5, maxBarThickness:44}] },
+    options: {...baseLineOpts(true), plugins:{...baseLineOpts(true).plugins, legend:{display:false}}}
+  });
+}
+
+// ---------- métricas por tag (grouped bars, 5 series) ----------
+function renderTagMetrics(rows){
+  const tagsInOrder = DATA.tags.filter(t => !state.tags.size || state.tags.has(t));
+  const byTag = groupBy(rows, 'tag');
+  const commRate=[], subRateCom=[], subRateNoCom=[], winRateCom=[], winRateNoCom=[];
+  tagsInOrder.forEach(t=>{
+    const tr = byTag.get(t) || [];
+    const rtsCom = sumField(tr,'RTS_COMUNICADOS'), rtsNoCom = sumField(tr,'RTS_NO_COMUNICADOS');
+    const subsCom = sumField(tr,'SUBS_COMUNICADOS'), subsNoCom = sumField(tr,'SUBS_NO_COMUNICADOS');
+    const winCom = sumField(tr,'WINNERS_COMUNICADOS'), winNoCom = sumField(tr,'WINNERS_NO_COMUNICADOS');
+    commRate.push(safeDiv(rtsCom, rtsCom+rtsNoCom));
+    subRateCom.push(safeDiv(subsCom, rtsCom));
+    subRateNoCom.push(safeDiv(subsNoCom, rtsNoCom));
+    winRateCom.push(safeDiv(winCom, subsCom));
+    winRateNoCom.push(safeDiv(winNoCom, subsNoCom));
+  });
+  destroyChart('chartTagMetrics');
+  const ctx = document.getElementById('chartTagMetrics').getContext('2d');
+  charts['chartTagMetrics'] = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels: tagsInOrder,
+      datasets:[
+        {label:'Comm rate', data:commRate, backgroundColor:'#ff4d8d', borderRadius:4},
+        {label:'Sub rate (com)', data:subRateCom, backgroundColor:'#5d6cf0', borderRadius:4},
+        {label:'Sub rate (no com)', data:subRateNoCom, backgroundColor:'#8894f2', borderRadius:4},
+        {label:'Win rate (com)', data:winRateCom, backgroundColor:'#f5b942', borderRadius:4},
+        {label:'Win rate (no com)', data:winRateNoCom, backgroundColor:'#8a93a6', borderRadius:4},
+      ]
+    },
+    options: baseLineOpts(true)
+  });
+}
+
+// ---------- render orchestration ----------
+function renderAll(){
+  renderFilters();
+  const rows = filteredMetrics();
+  const prodRows = filteredProductivity();
+  renderKPIs(rows);
+  renderFunnel(rows);
+  renderRateChart('chartSubRate', rows, 'SUBS_COMUNICADOS','RTS_COMUNICADOS','SUBS_NO_COMUNICADOS','RTS_NO_COMUNICADOS','SUBS_CONTROL','RTS_CONTROL');
+  renderRateChart('chartWinRate', rows, 'WINNERS_COMUNICADOS','SUBS_COMUNICADOS','WINNERS_NO_COMUNICADOS','SUBS_NO_COMUNICADOS','WINNERS_CONTROL','SUBS_CONTROL');
+  renderProdChart('chartAvgHours', prodRows, 'avg_hours');
+  renderProdChart('chartAvgOrders', prodRows, 'avg_orders');
+  renderCommRateWeekly(rows);
+  renderCommRateCountry(rows);
+  renderTagMetrics(rows);
+}
+
+function init(){
+  const start = new Date(DATA.date_range.start+'T00:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'});
+  const end = new Date(DATA.date_range.end+'T00:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'});
+  document.getElementById('dateRangeLabel').textContent = `${start} — ${end}`;
+  renderAll();
+}
+init();
+</script>
+</body>
+</html>
