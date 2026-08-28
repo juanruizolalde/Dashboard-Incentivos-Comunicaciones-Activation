@@ -763,9 +763,12 @@ function init(){
   const start = new Date(DATA.date_range.start+'T00:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'});
   const end = new Date(DATA.date_range.end+'T00:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'});
   document.getElementById('dateRangeLabel').textContent = `${start} — ${end}`;
-  if(DATA.generated_at){
-    const gen = new Date(DATA.generated_at+'T00:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'});
-    document.getElementById('updatedLabel').textContent = gen;
+    if(DATA.generated_at){
+    let label = DATA.generated_at;
+    if(/^\d{4}-\d{2}-\d{2}$/.test(DATA.generated_at)){
+      label = new Date(DATA.generated_at+'T00:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'});
+    }
+    document.getElementById('updatedLabel').textContent = label;
   }
   renderAll();
 }
